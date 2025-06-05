@@ -1,0 +1,118 @@
+# Copyright 2025 Vantage Compute Corporation
+# See LICENSE file for licensing details.
+name: openldap
+summary: |
+  Charmed openldap.
+
+description: |
+  This charmed operator deploys openldap.
+
+links:
+  contact: https://matrix.to/#/#hpc:ubuntu.com
+
+  issues:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator/issues
+
+  source:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator
+
+assumes:
+  - juju
+
+type: charm
+base: ubuntu@24.04
+platforms:
+  amd64:
+
+subordinate: false
+
+parts:
+  charm: {}
+
+charm-libs:
+  - lib: operator_libs_linux.apt
+    version: "0.17"
+
+provides:
+  sssd:
+    interface: ldap-sssd
+
+
+requires:
+  homedir-server-ipaddr:
+    interface: homedir-server-ipaddr
+
+peers:
+  openldap-peer:
+    interface: openldap-peer
+
+config:
+  options:
+    admin-password:
+      type: string
+      default: "admin"
+      description: |
+        LDAP administrator password.
+    domain:
+      type: string
+      default: "charmed-hpc"
+      description: |
+        LDAP Domain.
+    organization-name:
+      type: string
+      default: "Example Organization"
+      description: |
+        LDAP organization name.
+
+actions:
+  get-admin-password:
+    description: |
+      Display the administrator password.
+
+      Example usage:
+
+      ```bash
+      juju run openldap/leader get-admin-password
+      ```
+  get-sssd-binder-password:
+    description: |
+      Display the sssd-binder password.
+
+      Example usage:
+
+      ```bash
+      juju run openldap/leader get-sssd-binder-password
+      ```
+  add-user:
+    description: |
+      Add user to ldap.
+
+      Example usage:
+      $ juju run openldap/leader add-user \
+          username="user1" \
+          password="rats123" \
+          email="user1@user1.com" \
+          uid="6699" \
+          ssh-key="$(cat ~/.ssh/id_rsa.pub)"
+    params:
+      username:
+        type: string
+        description: The username of the user you wish to add.
+      password:
+        type: string
+        description: Reason password of the ldap user.
+      email:
+        type: string
+        description: The user's email.
+      uid:
+        type: string
+        description: The user's uid number.
+      ssh-key:
+        type: string
+        description: The user's ssh-key
+    required:
+      - username
+      - password
+      - email
+      - uid
+      - ssh-key
